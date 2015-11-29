@@ -2,9 +2,20 @@
 require './env'
 require 'timeout'
 
+DICTIONARY = './cmudict/cmudict-0.7b'
 NGRAMS = 3
 
-@dict = Dictionary.new
+def time
+  start = Time.now
+  yield
+  return Time.now - start
+end
+
+print 'Loading dictionary...'
+elapsed = time do
+  @dict = Dictionary.new(DICTIONARY)
+end
+puts '%.1fs' % elapsed
 
 @corpus = Corpus.new(:twain, NGRAMS) do |word|
   @dict.include?(word)
@@ -12,29 +23,34 @@ end
 
 @model = Model.new
 
-@corpus.each do |ngram|
-  @model << ngram
-end
-
-def sample(wordhash)
-  r = rand * wordhash.values.sum
-  wordhash.each do |k, v|
-    return k if r < v
-    r -= v
+print 'Loading corpus...'
+elapsed = time do
+  @corpus.each do |ngram|
+    @model << ngram
   end
 end
+puts '%.1fs' % elapsed
 
 # ap @model.suggest(['once', 'upon']).sort_by{ |k,v| v }
 
-FORMAT = ".*.*.*.*A/.*.*.*.*B/.*.*.*.*A/.*.*.*.*B"
+FORMAT = ",*.*.*.*A/*.*.*.*B/,*.*.*.*A/*.*.*.*B"
 # FORMAT = ".*..*..*.A/.*..*..*.A/.*..*B/.*..*B/.*..*..*.A"  # Limerick
 # FORMAT = "...../......./....."
 
 pf = PoemFormatter.new(FORMAT, @dict, @model, NGRAMS)
-puts pf.generate
+puts "\n" + pf.generate
 
 # DFS to find a poem that matches the format
 
+
+# def sample(wordhash)
+#   r = rand * wordhash.values.sum
+#   wordhash.each do |k, v|
+#     return k if r < v
+#     r -= v
+#   end
+# end
+#
 # def generate(ngram, format, rhymes={})
 #   return [] if format.blank?
 #
@@ -109,8 +125,6 @@ puts pf.generate
 # end
 #
 # 5.times do
-#   # TODO: Validate that the next word generated could be FULLSTOP
-#   # TODO: Don't let 'the' be a stressed word
 #   # TODO: (system for applying rules like the above)
 #   puts generate(['.'], FORMAT).join(' ')
 #   puts

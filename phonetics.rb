@@ -35,8 +35,10 @@ class Phonetics
     @phones[@rhyme_start, @phones.length]
   end
 
-  def rhymes_with?(other)
-    self.rhyme_phones == other.rhyme_phones && self.word != other.word
+  def rhymes_with?(other_phones)
+    rhyme_size = rhyme_phones.count
+    other_phones = other_phones.slice(-rhyme_size, rhyme_size)
+    rhyme_phones == other_phones
   end
 
   private

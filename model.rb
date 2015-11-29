@@ -21,7 +21,7 @@ class Model
     suggestions = {}
     ngram = ngram.clone
 
-    while ngram.size > 0
+    # while ngram.size > 0
       tok = token_for(ngram)
       gramscore = ngram.size.to_f
       if @frequencies.include?(tok)
@@ -33,7 +33,7 @@ class Model
         end
       end
       ngram.shift
-    end
+    # end
 
     suggestions
   end

@@ -5,6 +5,7 @@ class PoemFormatter
 
   # Formatters:
   #  . = syllable w/o stress
+  #  , = optional syllable w/o stress (beginning of word only)
   #  * = syllable w/ stress
   #  A = (any letter) Rhyme marker
   #  / = line ending (pause expected)
@@ -14,30 +15,25 @@ class PoemFormatter
     @dictionary = dictionary
     @model = model
     @max_ngram = max_ngram
-    @starttime = nil  # Keeps track of time spent searching
   end
 
   def generate
-    ngram = [Dictionary::FULLSTOP]
-    format = @format.clone
-    rhymes = {}
-    reset_timer
-    gen(ngram, format, rhymes).join(' ')
+    loop do
+      begin
+        Timeout::timeout(TIMEOUT) do
+          return gen(@format.clone).join(' ')
+        end
+      rescue Timeout::Error
+        puts 'Timeout elapsed. Starting over...'
+      end
+    end
   end
 
   private
 
-  def reset_timer
-    @starttime = Time.now
-  end
-
-  def timeout_elapsed?
-    (Time.now - @starttime) >= TIMEOUT * 60
-  end
-
   # Recursively generate a poem
   # TODO: Allow extra un-stressed (minor) words
-  def gen(ngram, format, rhymes)
+  def gen(format, ngram=[Dictionary::FULLSTOP], rhymes={}, phones=[])
     raise 'oops' if ngram.length > @max_ngram
 
     # If we're at the end, make sure we're at a FULLSTOP and return
@@ -72,18 +68,20 @@ class PoemFormatter
       word = remove_word(suggestions, (ngram.size == 1))
       if @dictionary.include?(word)
         @dictionary[word].each do |phonetics|
-          if phonetic_match?(phonetics, format, rhymes)
-            result = next_gen(phonetics, ngram, format, rhymes)
+          if matches_phonetics?(phonetics, format, rhymes, phones)
+            result = next_gen(phonetics, ngram, format, rhymes, phones)
             return [word] + result unless result.nil?
+          end
+
+          if format.start_with?(',')  # Optional non-stressed word
+            new_format = format.slice(1, format.length)
+            if matches_phonetics?(phonetics, new_format, rhymes, phones)
+              result = next_gen(phonetics, ngram, new_format, rhymes, phones)
+              return [word] + result unless result.nil?
+            end
           end
         end
         # Word does not match - try again
-      end
-
-      # Stop searching if it's been too long
-      if timeout_elapsed?
-        reset_timer
-        return nil
       end
     end
 
@@ -92,12 +90,12 @@ class PoemFormatter
 
   def endline_gen(ngram, format, rhymes)
     new_format = format[1, format.length]
-    result = gen(ngram, new_format, rhymes)
+    result = gen(new_format, ngram, rhymes)  # reset phones for rhyming
     return ["\n"] + result unless result.nil?
     nil
   end
 
-  def next_gen(phonetics, ngram, format, rhymes)
+  def next_gen(phonetics, ngram, format, rhymes, phones)
     new_ngram = ngram + [phonetics.word]
     new_ngram.shift if new_ngram.size >= @max_ngram
 
@@ -110,15 +108,19 @@ class PoemFormatter
       new_rhymes[rhyme_char] ||= phonetics
     end
 
-    gen(new_ngram, new_format, new_rhymes)
+    new_phones = phones + phonetics.phones
+
+    gen(new_format, new_ngram, new_rhymes, new_phones)
   end
 
   def remove_word(wordhash, random=false)
     if random
-      word = sample_word(wordhash)
+      word = wordhash.keys.sample
     else
-      # Choose most probable word
-      word = wordhash.sort_by{ |_, v| -v }.first.first
+      word = sample_word(wordhash)
+      # # Choose most probable word
+      # words = wordhash.sort_by{ |_, v| -v }
+      # (word = words.shift.first) until word.present? && (rand < 0.5 || words.empty?)  # Randomize a bit
     end
     wordhash.delete(word)
     word
@@ -133,9 +135,9 @@ class PoemFormatter
     nil
   end
 
-  def phonetic_match?(phonetics, format, rhymes)
+  def matches_phonetics?(phonetics, format, rhymes, phones)
     subformat, rhyme = extract_subformat_and_rhyme(phonetics, format)
-    matches_subformat?(phonetics, subformat) && matches_rhyme?(phonetics, rhymes[rhyme])
+    matches_subformat?(phonetics, subformat) && matches_rhyme?(phonetics, rhymes[rhyme], phones)
   end
 
   def extract_subformat_and_rhyme(phonetics, format)
@@ -148,7 +150,7 @@ class PoemFormatter
   end
 
   def matches_subformat?(phonetics, subformat)
-    return false unless subformat =~ /^[.*]+$/  # Should not cross rhymes or line endings
+    return false unless subformat =~ /^[,.*]+$/  # Should not cross rhymes or line endings
     subformat.chars.each_with_index do |c, ix|
       return false if c == '*' && !phonetics.syllables[ix]  # Make sure stresses align
     end
@@ -156,8 +158,9 @@ class PoemFormatter
   end
 
   # TODO: If phonetics has fewer syllables, need to look back at previous words
-  def matches_rhyme?(phonetics, rhyme_phonetics)
+  def matches_rhyme?(phonetics, rhyme_phonetics, phones)
     return true if rhyme_phonetics.nil?
-    rhyme_phonetics.rhymes_with?(phonetics)
+    return false if phonetics.word == rhyme_phonetics.word
+    rhyme_phonetics.rhymes_with?(phones + phonetics.phones)
   end
 end

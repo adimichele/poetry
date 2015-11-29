@@ -1,6 +1,4 @@
 class Dictionary
-  FILENAME = './cmudict/cmudict-0.7b'
-
   FULLSTOP = '.'
   FULLSTOP_WORDS = ['.', '!', '?', '."', '!"', '?""']
 
@@ -9,10 +7,10 @@ class Dictionary
 
   attr_reader :dictionary
 
-  def initialize
+  def initialize(filename)
     @dictionary = {}
 
-    File.open(FILENAME).each do |line|
+    File.open(filename).each do |line|
       next unless line.valid_encoding? && line =~ /^\w/  # Only take lines that begin with a letter (removes comments and punctuation)
       phones = line.split  # First element will be the word
       word = phones.shift.gsub(/\(\d+\)$/, '').downcase
