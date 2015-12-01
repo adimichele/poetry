@@ -8,6 +8,7 @@ class Phonetics
   end
 
   def initialize(word, phone_symbols)
+    @original_phones = phone_symbols.clone.map(&:clone)
     @word = word
     @phones = []
     @syllables = []
@@ -33,12 +34,6 @@ class Phonetics
 
   def rhyme_phones
     @phones[@rhyme_start, @phones.length]
-  end
-
-  def rhymes_with?(other_phones)
-    rhyme_size = rhyme_phones.count
-    other_phones = other_phones.slice(-rhyme_size, rhyme_size)
-    rhyme_phones == other_phones
   end
 
   private

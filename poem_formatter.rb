@@ -1,11 +1,13 @@
+require 'timeout'
+
+# TODO: New formatter that searches backwards
 class PoemFormatter
-  TIMEOUT = 5  # Seconds
+  TIMEOUT = 6  # Seconds
   # Rules (todo)
   #
 
   # Formatters:
   #  . = syllable w/o stress
-  #  , = optional syllable w/o stress (beginning of word only)
   #  * = syllable w/ stress
   #  A = (any letter) Rhyme marker
   #  / = line ending (pause expected)
@@ -21,10 +23,13 @@ class PoemFormatter
     loop do
       begin
         Timeout::timeout(TIMEOUT) do
-          return gen(@format.clone).join(' ')
+          t = Time.now
+          result = gen(@format.clone).join(' ')
+          puts '[%.1fs]' % (Time.now - t)
+          return result
         end
       rescue Timeout::Error
-        puts 'Timeout elapsed. Starting over...'
+        print '.'
       end
     end
   end
@@ -72,14 +77,6 @@ class PoemFormatter
             result = next_gen(phonetics, ngram, format, rhymes, phones)
             return [word] + result unless result.nil?
           end
-
-          if format.start_with?(',')  # Optional non-stressed word
-            new_format = format.slice(1, format.length)
-            if matches_phonetics?(phonetics, new_format, rhymes, phones)
-              result = next_gen(phonetics, ngram, new_format, rhymes, phones)
-              return [word] + result unless result.nil?
-            end
-          end
         end
         # Word does not match - try again
       end
@@ -105,7 +102,8 @@ class PoemFormatter
     if new_format.first =~ /\w/  # Rhyme formatter
       rhyme_char = new_format.first.downcase
       new_format[0] = ''
-      new_rhymes[rhyme_char] ||= phonetics
+      new_rhymes[rhyme_char] ||= Rhyme.new(phonetics)
+      new_rhymes[rhyme_char].words << phonetics.word
     end
 
     new_phones = phones + phonetics.phones
@@ -150,7 +148,7 @@ class PoemFormatter
   end
 
   def matches_subformat?(phonetics, subformat)
-    return false unless subformat =~ /^[,.*]+$/  # Should not cross rhymes or line endings
+    return false unless subformat =~ /^[.*]+$/  # Should not cross rhymes or line endings
     subformat.chars.each_with_index do |c, ix|
       return false if c == '*' && !phonetics.syllables[ix]  # Make sure stresses align
     end
@@ -158,9 +156,24 @@ class PoemFormatter
   end
 
   # TODO: If phonetics has fewer syllables, need to look back at previous words
-  def matches_rhyme?(phonetics, rhyme_phonetics, phones)
-    return true if rhyme_phonetics.nil?
-    return false if phonetics.word == rhyme_phonetics.word
-    rhyme_phonetics.rhymes_with?(phones + phonetics.phones)
+  def matches_rhyme?(phonetics, rhyme, phones)
+    return true if rhyme.nil?
+    return false if rhyme.words.include?(phonetics.word)
+    rhyme.rhymes_with?(phones + phonetics.phones)
+  end
+end
+
+class Rhyme
+  attr_reader :phones, :words
+
+  def initialize(phonetics)
+    @phones = phonetics.rhyme_phones
+    @words = Set.new
+  end
+
+  def rhymes_with?(other_phones)
+    rhyme_size = @phones.count
+    other_phones = other_phones.slice(-rhyme_size, rhyme_size)
+    @phones == other_phones
   end
 end

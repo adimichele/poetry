@@ -19,13 +19,14 @@ class Corpus
   end
 
   def each
-    filename = @filenames.pop
-    clear_history!
-    push_history!(Dictionary::FULLSTOP)
-    File.open(filename).each do |line|
-      extract_words(line).each do |word|
-        update_history(word)
-        yield @history.clone if @history.size > 1
+    @filenames.each do |filename|
+      clear_history!
+      push_history!(Dictionary::FULLSTOP)
+      File.open(filename).each do |line|
+        extract_words(line).each do |word|
+          update_history(word)
+          yield @history.clone if @history.size > 1
+        end
       end
     end
   end
