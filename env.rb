@@ -10,7 +10,7 @@ autoload :PoemFormatter, 'poem_formatter'
 
 DICTIONARY = './cmudict/cmudict-0.7b'
 NGRAMS = 3
-CORPUS = :poe
+CORPUS = :bible
 
 class Env
   attr_reader :dictionary, :corpus, :model
