@@ -1,41 +1,26 @@
 # Suggests successive words
 
 class Model
-  def initialize
+  attr_reader :dictionary, :corpus
+
+  def initialize(dictionary, corpus)
+    @dictionary = dictionary
+    @corpus = corpus
     @frequencies = {}
-  end
 
-  def <<(ngram)
-    word = ngram.pop
-
-    while ngram.size > 0
-      tok = token_for(ngram)
-      @frequencies[tok] ||= WordDist.new
-      @frequencies[tok] << word
-      ngram.shift  # store all possible 'grams
+    @corpus.each do |ngram|
+      add(ngram)
     end
   end
 
-  # TODO: Limit by ngram size?
-  def suggest(ngram)
-    suggestions = {}
-    ngram = ngram.clone
+  def ngrams
+    @corpus.ngrams
+  end
 
-    # while ngram.size > 0
-      tok = token_for(ngram)
-      gramscore = ngram.size.to_f
-      if @frequencies.include?(tok)
-        freq = @frequencies[tok].normalized
-        freq.each do |word, score|
-          score *= gramscore
-          suggestions[word] ||= 0
-          suggestions[word] = score if score > suggestions[word]
-        end
-      end
-      ngram.shift
-    # end
-
-    suggestions
+  # TODO: Search through smaller ngrams as well?
+  def suggestions_for(ngram)
+    tok = token_for(ngram)
+    WordSuggestions.new(ngram, @frequencies[tok], @dictionary)
   end
 
   def follows?(ngram, word)
@@ -45,8 +30,25 @@ class Model
 
   private
 
+  def add(ngram)
+    word = ngram.pop
+
+    while ngram.size > 0
+      tok_ngram = make_ngram_full_size(ngram)
+      tok = token_for(tok_ngram)
+      @frequencies[tok] ||= WordDist.new
+      @frequencies[tok] << word
+      ngram.shift  # store all possible 'grams
+    end
+  end
+
+  def make_ngram_full_size(ngram)
+    Array.new(ngrams - ngram.size - 1) + ngram
+  end
+
   def token_for(ngram)
-    ngram.join('|')
+    raise "Ngram (#{ngram.size}) should always be the same size (#{ngrams - 1})." unless ngram.size == ngrams - 1
+    ngram.reject{ |w| w.nil? }.join('|')
   end
 end
 

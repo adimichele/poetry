@@ -6,14 +6,15 @@ autoload :Corpus, 'corpus'
 autoload :Dictionary, 'dictionary'
 autoload :Phonetics, 'phonetics'
 autoload :Model, 'model'
+autoload :WordSuggestions, 'word_suggestions'
 autoload :PoemFormatter, 'poem_formatter'
+autoload :PoemState, 'poem_state'
 
-DICTIONARY = './cmudict/cmudict-0.7b'
-NGRAMS = 3
-CORPUS = :bible
 
 class Env
-  attr_reader :dictionary, :corpus, :model
+  DICTIONARY = './cmudict/cmudict-0.7b'
+  NGRAMS = 3 # 4 is great
+  CORPUS = :dpp
 
   class << self
     def time
@@ -23,7 +24,7 @@ class Env
     end
 
     def get_formatter(format)
-      PoemFormatter.new(FORMAT, @dictionary, @model, NGRAMS)
+      PoemFormatter.new(format, @model)
     end
   end
 
@@ -37,13 +38,10 @@ class Env
     @dictionary.include?(word)
   end
 
-  @model = Model.new
-
-  print 'Loading corpus...'
+  print 'Training model with corpus...'
   elapsed = time do
-    @corpus.each do |ngram|
-      @model << ngram
-    end
+    @model = Model.new(@dictionary, @corpus)
   end
+
   puts '%.1fs' % elapsed
 end

@@ -1,4 +1,5 @@
 class Corpus
+  attr_reader :ngrams
 
   def initialize(corpus_name, ngrams=2, &word_validator_block)
     raise 'ngrams must be > 1' unless ngrams > 1
@@ -15,7 +16,7 @@ class Corpus
   end
 
   def clear_history!
-    @history.clear
+    @history = Array.new(@ngrams)
   end
 
   def each
@@ -25,7 +26,7 @@ class Corpus
       File.open(filename).each do |line|
         extract_words(line).each do |word|
           update_history(word)
-          yield @history.clone if @history.size > 1
+          yield @history.clone if enough_history?
         end
       end
     end
@@ -77,5 +78,9 @@ class Corpus
 
   def extract_words(line)
     line.downcase.split(/(\s+|[\w']+|[^\w'])/).reject(&:blank?)
+  end
+
+  def enough_history?
+    @history.reject(&:nil?).count > 1
   end
 end

@@ -13,15 +13,13 @@ class Phonetics
     @phones = []
     @syllables = []
     @rhyme_start = 0  # Highest stressed phone (vowel) - start matching rhymes here
-    last_stress = -1
 
     phone_symbols.each do |ps|
       stress = extract_last_digit(ps)
 
       unless stress.nil?
         @syllables << !(Phonetics.is_minor?(word) || stress == 0)
-        @rhyme_start = @phones.count if stress >= last_stress
-        last_stress = stress
+        @rhyme_start = @phones.count if stress == 1
       end
 
       @phones << ps
