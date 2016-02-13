@@ -9,12 +9,13 @@ autoload :Model, 'model'
 autoload :WordSuggestions, 'word_suggestions'
 autoload :PoemFormatter, 'poem_formatter'
 autoload :PoemState, 'poem_state'
+autoload :Rhyme, 'rhyme'
 
 
 class Env
   DICTIONARY = './cmudict/cmudict-0.7b'
-  NGRAMS = 3 # 4 is great
-  CORPUS = :dpp
+  NGRAMS = 4 #is great
+  CORPUS = :bible
 
   class << self
     def time

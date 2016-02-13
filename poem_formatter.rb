@@ -13,7 +13,6 @@ class PoemFormatter
   #  * = syllable w/ stress
   #  A = (any letter) Rhyme marker
   #  / = line ending (pause expected)
-  #  | = line ending (no pause necessary)
   def initialize(format, model)
     @format = format
     @model = model
@@ -40,6 +39,12 @@ class PoemFormatter
 
   private
 
+  def validate_format!
+    if @format =~ /[^.*\w\/]/
+      raise "Invalid poem format: #{@format.inspect}."
+    end
+  end
+
   def reset_ngram(word)
     ngram = Array.new(@model.ngrams - 1, nil)
     ngram[-1] = word
@@ -51,46 +56,36 @@ class PoemFormatter
   def gen(state)
 
     # If we're at the end, make sure we're at a FULLSTOP and return
-    if state.eof?
-      if @model.follows?(state.ngram, Dictionary::FULLSTOP)
-        return []
-      else
-        return nil
-      end
-    end
+    return end_poem(state) if state.eof?
 
     # If we're at a pause, make sure that a FULLSTOP or SEMISTOP can follow.
-    if state.line_break?
-      if @model.follows?(state.ngram, Dictionary::SEMISTOP)
-        ngram = reset_ngram(Dictionary::SEMISTOP)
-        return endline_gen(state.next_state_after_break(ngram))
-      elsif @model.follows?(state.ngram, Dictionary::FULLSTOP)
-        ngram = reset_ngram(Dictionary::FULLSTOP)
-        return endline_gen(state.next_state_after_break(ngram))
-      else
-        return nil
-      end
-    end
+    return line_break(state) if state.line_break?
 
-    # If we're at a non-pause line ending, just end the line.
-    if state.break?
-      return endline_gen(state)
-    end
-
-    suggestions = @model.suggestions_for(state.ngram)
+    suggestions = @model.suggestions_for(state)
     suggestions.each do |phonetics|
-      if state.matches?(phonetics)
-        new_state = state.next_state(phonetics)
-        result = gen(new_state)
-        return [phonetics.word] + result unless result.nil?
-      end
+      new_state = state.next_state(phonetics)
+      result = gen(new_state)
+      return [phonetics.word] + result unless result.nil?
     end
 
     nil  # No match
   end
 
-  def endline_gen(state)
-    result = gen(state)
+  def end_poem(state)
+    return [] if @model.follows?(state.ngram, Dictionary::FULLSTOP)
+    return nil
+  end
+
+  def line_break(state)
+    return endline_gen(state, Dictionary::SEMISTOP) if @model.follows?(state.ngram, Dictionary::SEMISTOP)
+    return endline_gen(state, Dictionary::FULLSTOP) if @model.follows?(state.ngram, Dictionary::FULLSTOP)
+    return nil
+  end
+
+  def endline_gen(state, start_word)
+    ngram = reset_ngram(start_word)
+    new_state = state.next_state_after_break(ngram)
+    result = gen(new_state)
     return ["\n"] + result unless result.nil?
     nil
   end

@@ -18,9 +18,9 @@ class Model
   end
 
   # TODO: Search through smaller ngrams as well?
-  def suggestions_for(ngram)
-    tok = token_for(ngram)
-    WordSuggestions.new(ngram, @frequencies[tok], @dictionary)
+  def suggestions_for(state)
+    tok = token_for(state.ngram)
+    WordSuggestions.new(state, @frequencies[tok], @dictionary)
   end
 
   def follows?(ngram, word)
