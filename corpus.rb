@@ -1,6 +1,7 @@
 class Corpus
   attr_reader :ngrams
 
+  # TODO: Read from online sources
   def initialize(corpus_name, ngrams=2, &word_validator_block)
     raise 'ngrams must be > 1' unless ngrams > 1
     @ngrams = ngrams

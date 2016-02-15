@@ -1,6 +1,5 @@
 class PoemState
   attr_reader :ngram, :rhymes, :phones
-  # TODO: Add format
   def initialize(format, ngram, rhymes={}, phones=[])
     @format = format || ''
     @ngram, @rhymes, @phones = ngram, rhymes, phones
@@ -64,7 +63,6 @@ class PoemState
     true
   end
 
-  # TODO: If phonetics has fewer syllables, need to look back at previous words
   def matches_rhyme?(phonetics, rhyme, phones)
     return true if rhyme.nil?
     return false if rhyme.words.include?(phonetics.word)

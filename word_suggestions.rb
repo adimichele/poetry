@@ -1,5 +1,4 @@
 class WordSuggestions
-  # TODO: Look up suggestions based on smaller ngrams (maybe take extra word_dist arguments)
   def initialize(state, word_dist, dictionary)
     @ngram = state.ngram
     @suggestions = {}

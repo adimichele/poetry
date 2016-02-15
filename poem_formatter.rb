@@ -5,8 +5,6 @@ class NullPoemError < StandardError; end
 # TODO: New formatter that searches backwards
 class PoemFormatter
   TIMEOUT = 6  # Seconds
-  # Rules (todo)
-  #
 
   # Formatters:
   #  . = syllable w/o stress

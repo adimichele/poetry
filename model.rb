@@ -17,7 +17,7 @@ class Model
     @corpus.ngrams
   end
 
-  # TODO: Search through smaller ngrams as well?
+  # NB: Search through smaller ngrams as well?
   def suggestions_for(state)
     tok = token_for(state.ngram)
     WordSuggestions.new(state, @frequencies[tok], @dictionary)

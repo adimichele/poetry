@@ -1,28 +1,4 @@
 class PoemNode
-  def self.create_tree(format, model)
-    loop do
-      begin
-        Timeout::timeout(TIMEOUT) do
-          t = Time.now
-          ngram = reset_ngram(Dictionary::FULLSTOP)
-          state = PoemState.new(format.clone, ngram)
-          pn = PoemNode.new(nil, state, nil, model)
-
-          # TODO
-
-          # result = gen(PoemState.new(@format.clone, ngram))
-          # raise NullPoemError if result.nil?
-          # puts '[%.1fs]' % (Time.now - t)
-          # return result.join(' ')
-        end
-      rescue Timeout::Error
-        print '.'
-      rescue NullPoemError
-        print '-'
-      end
-    end
-  end
-
   attr_reader :line_break
 
   def initialize(last_node, state, phonetics, model)
@@ -35,7 +11,7 @@ class PoemNode
     @line_break = false
     @children = Set.new
 
-    # TODO: divide by word frequency?
+    # TODO: divide by word frequency to prefer less frequent words?
     @score = @phonetics.syllables.count.to_f
 
     if @next_state.eof?
@@ -47,7 +23,7 @@ class PoemNode
     if @next_state.line_break?
       @line_break = true
       if @model.follows?(@next_state.ngram, Dictionary::SEMISTOP)
-        # TODO: Don't reset after semistop
+        # TODO: Don't reset after semistop so that the thought continues
         @new_state = @next_state.next_state_after_break(self.reset_ngram(Dictionary::SEMISTOP))
         @score += 1
       elsif @model.follows?(@next_state.ngram, Dictionary::FULLSTOP)
