@@ -1,12 +1,13 @@
 # Suggests successive words
 
 class Model
-  attr_reader :dictionary, :corpus
+  attr_reader :dictionary, :corpus, :word_counts
 
   def initialize(dictionary, corpus)
     @dictionary = dictionary
     @corpus = corpus
     @frequencies = {}
+    @word_counts = {}
 
     @corpus.each do |ngram|
       add(ngram)
@@ -23,15 +24,21 @@ class Model
     WordSuggestions.new(state, @frequencies[tok], @dictionary)
   end
 
-  def follows?(ngram, word)
+  # Makes sure each word in :words: can follow the given ngram
+  def follows?(ngram, words)
+    words = [words] unless words.is_a? Array
     tok = token_for(ngram)
-    return @frequencies.include?(tok) && @frequencies[tok].include?(word)
+    return false unless @frequencies.include?(tok)
+    words.all?{ |word| @frequencies[tok].include?(word) }
   end
 
   private
 
   def add(ngram)
     word = ngram.pop
+
+    @word_counts[word] ||= 0
+    @word_counts[word] += 1
 
     while ngram.size > 0
       tok_ngram = make_ngram_full_size(ngram)
@@ -53,6 +60,8 @@ class Model
 end
 
 class WordDist
+  attr_reader :observations
+
   def initialize
     @observations = {}
   end

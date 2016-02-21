@@ -1,6 +1,5 @@
 class WordSuggestions
   def initialize(state, word_dist, dictionary)
-    @ngram = state.ngram
     @suggestions = {}
     @dictionary = dictionary
     create_suggestions!(state, word_dist) if word_dist.present?
@@ -21,20 +20,16 @@ class WordSuggestions
     freq = word_dist.normalized
     freq.each do |word, score|
       next unless @dictionary.include?(word)
-      match = nil
       @dictionary[word].each do |phonetics|
-        match = phonetics if state.matches?(phonetics)
+        # next unless state.matches?(phonetics)
+        # NB: This takes all valid pronunciations
+        @suggestions[phonetics] = score + phonetics.syllables.count if state.matches?(phonetics)
       end
-      @suggestions[match] = score if match
     end
   end
 
   def remove_phonetics
-    if @ngram.size == 1
-      phonetics = @suggestions.keys.sample
-    else
-      phonetics = sample_suggestion
-    end
+    phonetics = sample_suggestion
     @suggestions.delete(phonetics)
     phonetics
   end

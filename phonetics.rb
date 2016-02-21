@@ -1,5 +1,5 @@
 class Phonetics
-  attr_reader :phones, :syllables, :word
+  attr_reader :syllables, :word
 
   MINOR_WORDS = %w{the and of a an}
 
@@ -7,31 +7,28 @@ class Phonetics
     MINOR_WORDS.include?(word.downcase)
   end
 
+  # TODO: group phones by syllable (like PoemFormat - maybe reuse the Syllable struct?)
   def initialize(word, phone_symbols)
-    @original_phones = phone_symbols.clone.map(&:clone)
     @word = word
-    @phones = []
     @syllables = []
     @rhyme_start = 0  # Highest stressed phone (vowel) - start matching rhymes here
 
+    last_syllable = nil
     phone_symbols.each do |ps|
       stress = extract_last_digit(ps)
+      last_syllable.phones << ps unless last_syllable.nil? || stress
 
       unless stress.nil?
-        @syllables << !(Phonetics.is_minor?(word) || stress == 0)
-        @rhyme_start = @phones.count if stress == 1
+        stress = !(Phonetics.is_minor?(word) || stress == 0)
+        last_syllable = Syllable.new(stress, [ps])
+        @syllables << last_syllable
+        @rhyme_start = @syllables.count if stress == 1
       end
-
-      @phones << ps
     end
   end
 
-  def to_s
-    @phones.join('-') + ' ' + @syllables.map(&:to_s).map(&:first).join
-  end
-
-  def rhyme_phones
-    @phones[@rhyme_start, @phones.length]
+  def rhyme_syllables
+    @syllables[@rhyme_start, @syllables.length]
   end
 
   private

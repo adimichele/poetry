@@ -1,14 +1,23 @@
 class Corpus
+  #
+  # Sources:
+  # https://www.gutenberg.org/
+  # http://textfiles.com/
+
   attr_reader :ngrams
 
   # TODO: Read from online sources
-  def initialize(corpus_name, ngrams=2, &word_validator_block)
+  def initialize(corpora, ngrams=2, &word_validator_block)
     raise 'ngrams must be > 1' unless ngrams > 1
+    corpora = [corpora] unless corpora.is_a? Array
     @ngrams = ngrams
     @word_validator_block = word_validator_block
-    files = File.join('./corpus', corpus_name.to_s, '*.txt')
-    @filenames = Dir[files]
-    raise "Invalid corpus: #{corpus_name.inspect}" if @filenames.empty?
+    @filenames = []
+    corpora.each do |corpus|
+      files = File.join('./corpus', corpus.to_s, '*.txt')
+      raise "Invalid corpus: #{corpus.inspect}" if files.empty?
+      @filenames += Dir[files]
+    end
     @history = []
   end
 
@@ -39,9 +48,7 @@ class Corpus
     if last_word == Dictionary::FULLSTOP
       clear_history!
       push_history!(Dictionary::FULLSTOP)
-    # elsif last_word == Dictionary::SEMISTOP
-    #   clear_history!
-    #   push_history!(Dictionary::SEMISTOP)
+      # Don't clear history for SEMISTOP or anything else
     end
     
     if fullstop?(word)
@@ -51,6 +58,7 @@ class Corpus
     elsif valid_word?(word)
       push_history!(word)
     else
+      # This isn't a valid word
       clear_history!
     end
   end

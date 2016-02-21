@@ -8,14 +8,19 @@ autoload :Phonetics, 'phonetics'
 autoload :Model, 'model'
 autoload :WordSuggestions, 'word_suggestions'
 autoload :PoemFormatter, 'poem_formatter'
+autoload :Syllable, 'syllable'
+autoload :PoemFormat, 'poem_format'
 autoload :PoemState, 'poem_state'
 autoload :Rhyme, 'rhyme'
 
 
 class Env
   DICTIONARY = './cmudict/cmudict-0.7b'
-  NGRAMS = 4 #is great
-  CORPUS = :bible
+  NGRAMS = 3 # 4 is great
+  # CORPUS = [:dpp, :poe, :twain]
+  # CORPUS = :dickens
+  # CORPUS = :bible
+  CORPUS = :twain
 
   class << self
     def time
@@ -24,7 +29,8 @@ class Env
       return Time.now - start
     end
 
-    def get_formatter(format)
+    def get_formatter(fmt)
+      format = PoemFormat.create(fmt)
       PoemFormatter.new(format, @model)
     end
   end
