@@ -19,6 +19,10 @@ class Corpus
       @filenames += Dir[files]
     end
     @history = []
+
+    # For tracking stats
+    @attempts = 0
+    @misses = 0
   end
 
   def eof?
@@ -40,6 +44,7 @@ class Corpus
         end
       end
     end
+    print "[#{@attempts} attempts, #{(100.0 * @misses.to_f / @attempts).round}% miss rate ]"
   end
 
   private
@@ -50,6 +55,8 @@ class Corpus
       push_history!(Dictionary::FULLSTOP)
       # Don't clear history for SEMISTOP or anything else
     end
+
+    @attempts += 1
     
     if fullstop?(word)
       push_history!(Dictionary::FULLSTOP)
@@ -59,6 +66,7 @@ class Corpus
       push_history!(word)
     else
       # This isn't a valid word
+      @misses += 1
       clear_history!
     end
   end

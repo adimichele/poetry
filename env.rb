@@ -18,9 +18,10 @@ class Env
   DICTIONARY = './cmudict/cmudict-0.7b'
   NGRAMS = 3 # 4 is great
   # CORPUS = [:dpp, :poe, :twain]
+  # CORPUS = ['**']
+  CORPUS = :shakespeare
   # CORPUS = :dickens
-  # CORPUS = :bible
-  CORPUS = :twain
+  # CORPUS = :twain
 
   class << self
     def time

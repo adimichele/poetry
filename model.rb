@@ -18,10 +18,16 @@ class Model
     @corpus.ngrams
   end
 
-  # NB: Search through smaller ngrams as well?
   def suggestions_for(state)
-    tok = token_for(state.ngram)
-    WordSuggestions.new(state, @frequencies[tok], @dictionary)
+    ngram = state.ngram.clone
+    freqs = []
+    # TODO: Make this configurable
+    while ngram.size > 0
+      tok = token_for(state.ngram)
+      freqs << @frequencies[tok]
+      ngram.shift
+    end
+    WordSuggestions.new(state, freqs, @dictionary)
   end
 
   # Makes sure each word in :words: can follow the given ngram

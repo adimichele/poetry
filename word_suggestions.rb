@@ -1,8 +1,14 @@
 class WordSuggestions
-  def initialize(state, word_dist, dictionary)
-    @suggestions = {}
+  # :word_dists: is an ordered array of word frequencies - first item takes most precedence
+  def initialize(state, word_dists, dictionary)
+    word_dists = Array.wrap(word_dists).compact
+    @suggestions = []
+    @seen = Set.new
     @dictionary = dictionary
-    create_suggestions!(state, word_dist) if word_dist.present?
+    word_dists.each do |word_dist|
+      sug = create_suggestions!(state, word_dist)
+      @suggestions << sug if sug.any?
+    end
   end
 
   delegate :any?, to: :@suggestions
@@ -16,30 +22,38 @@ class WordSuggestions
   private
 
   def create_suggestions!(state, word_dist)
-    @suggestions = {}
+    sug = {}
     freq = word_dist.normalized
     freq.each do |word, score|
       next unless @dictionary.include?(word)
+      next if @seen.include?(word)
+      @seen.add(word)
       @dictionary[word].each do |phonetics|
         # next unless state.matches?(phonetics)
         # NB: This takes all valid pronunciations
-        @suggestions[phonetics] = score + phonetics.syllables.count if state.matches?(phonetics)
+        sug[phonetics] = score + phonetics.syllables.count if state.matches?(phonetics)
       end
     end
+    sug
   end
 
   def remove_phonetics
     phonetics = sample_suggestion
-    @suggestions.delete(phonetics)
+    current_suggestion.delete(phonetics)
+    @suggestions.shift if current_suggestion.empty?
     phonetics
   end
 
   def sample_suggestion
-    r = rand * @suggestions.values.sum
-    @suggestions.each do |k, v|
+    r = rand * current_suggestion.values.sum
+    current_suggestion.each do |k, v|
       return k if r < v
       r -= v
     end
     nil
+  end
+
+  def current_suggestion
+    @suggestions.first
   end
 end
