@@ -1,12 +1,12 @@
-class WordSuggestions
-  # :word_dists: is an ordered array of word frequencies - first item takes most precedence
-  def initialize(state, word_dists, dictionary)
-    word_dists = Array.wrap(word_dists).compact
+class Suggestions
+  # :freq_dists: is an ordered array of word frequencies - first item takes most precedence
+  def initialize(state, freq_dists, dictionary)
+    freq_dists = Array.wrap(freq_dists).compact
     @suggestions = []
     @seen = Set.new
     @dictionary = dictionary
-    word_dists.each do |word_dist|
-      sug = create_suggestions!(state, word_dist)
+    freq_dists.each do |freq_dist|
+      sug = create_suggestions!(state, freq_dist)
       @suggestions << sug if sug.any?
     end
   end
@@ -21,16 +21,14 @@ class WordSuggestions
 
   private
 
-  def create_suggestions!(state, word_dist)
+  def create_suggestions!(state, freq_dist)
     sug = {}
-    freq = word_dist.normalized
-    freq.each do |word, score|
-      next unless @dictionary.include?(word)
+    freq_dist.each do |word, score|
       next if @seen.include?(word)
       @seen.add(word)
       @dictionary[word].each do |phonetics|
         # next unless state.matches?(phonetics)
-        # NB: This takes all valid pronunciations
+        # NB: This takes all matching pronunciations
         sug[phonetics] = score + phonetics.syllables.count if state.matches?(phonetics)
       end
     end

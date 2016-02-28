@@ -1,17 +1,11 @@
 #!/usr/bin/env ruby
 require './env'
 
-# FORMAT = ".*.*.*.*A/.*.*.*.*B/.*.*.*.*A/.*.*.*.*B"
-# FORMAT = "*.*.*.*.A/*.*.*.*.A/*.*.*.*B/*.*.*.*.A/*.*.*.*.A/*.*.*.*B"
-# FORMAT = ".*..*..*.A/.*..*..*.A/.*..*B/.*..*B/.*..*..*.A"  # Limerick
-# FORMAT = "...../......./....."  # Haiku
-# FORMAT = ".*..*.A|*..*B/.*..*.A|*..*B"
-# FORMAT = ".*..*..*A/.*..*..*A/.*..*B/.*..*B/.*..*..*A"  # Limerick 2
-# FORMAT = ".*.*.*A/.*.*.*B/.*.*.*A/.*.*.*B"
-FORMAT = ".*.*.*.*A/.*.*.*B/.*.*.*.*A/.*.*.*B"
-
-# FORMAT = ".*.*.A/.*.*.A/.*.*.*B/.*.*.C/.*.*.C/.*.*.*B"
-# FORMAT = ".*.*A/.*.*A/.*.*A/.*.*A/.*.*B/.*.*B/.*.*B/.*.*B/"
-
-pf = Env.get_formatter(FORMAT)
+pf = Env.get_formatter
 puts "\n" + pf.generate
+
+# Train on phonemes instead:
+# 1.  Learn syllable sequences (include pauses)
+# 1a. Create syllable-to-word index
+# 2.  Generate sequences of syllables that matches format
+# 2a. As syllables are generated, maintain a word sequences that matches and is valid.

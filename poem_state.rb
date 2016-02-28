@@ -1,23 +1,18 @@
 class PoemState
   class << self
     def create(poem_format, model)
-      ngram = reset_ngram(model, Dictionary::FULLSTOP)
-      PoemState.new(model, poem_format, ngram)
-    end
-
-    def reset_ngram(model, word)
-      ngram = Array.new(model.ngrams - 1, nil)
-      ngram[-1] = word
-      ngram
+      sequence = Sequence.blank.plus(Dictionary::FULLSTOP)
+      PoemState.new(model, poem_format, sequence)
     end
   end
 
-  attr_reader :ngram, :poem_format
+  attr_reader :sequence, :poem_format, :poem
 
-  def initialize(model, poem_format, ngram)
+  def initialize(model, poem_format, sequence, poem='')
     @poem_format = poem_format
-    @ngram = ngram
+    @sequence = sequence
     @model = model
+    @poem = poem
   end
 
   def eof?
@@ -27,7 +22,7 @@ class PoemState
   def matches?(phonetics)
     return false unless @poem_format.matches?(phonetics)
     return true unless ends_line?(phonetics)
-    @model.follows?(next_ngram(phonetics.word), [Dictionary::FULLSTOP, Dictionary::SEMISTOP])
+    @model.follows?(@sequence.plus(phonetics.word), [Dictionary::FULLSTOP, Dictionary::SEMISTOP])
   end
 
   def ends_line?(phonetics)
@@ -35,16 +30,12 @@ class PoemState
   end
 
   def next_state(phonetics)
-    new_ngram = next_ngram(phonetics.word)
+    next_sequence = @sequence.plus(phonetics.word)
     new_format = @poem_format.trim_format(phonetics)
-    PoemState.new(@model, new_format, new_ngram)
-  end
 
-  private
+    new_poem = poem + ' ' + phonetics.word
+    new_poem += "\n" if ends_line?(phonetics)
 
-  def next_ngram(word)
-    new_ngram = @ngram + [word]
-    new_ngram.shift
-    new_ngram
+    PoemState.new(@model, new_format, next_sequence, new_poem)
   end
 end

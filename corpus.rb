@@ -4,21 +4,19 @@ class Corpus
   # https://www.gutenberg.org/
   # http://textfiles.com/
 
-  attr_reader :ngrams
-
   # TODO: Read from online sources
-  def initialize(corpora, ngrams=2, &word_validator_block)
-    raise 'ngrams must be > 1' unless ngrams > 1
+  def initialize(dictionary, corpora)
+    raise 'ngrams must be > 1' unless Env::HISTORY_SIZE > 1
     corpora = [corpora] unless corpora.is_a? Array
-    @ngrams = ngrams
-    @word_validator_block = word_validator_block
+    @dictionary = dictionary
     @filenames = []
     corpora.each do |corpus|
       files = File.join('./corpus', corpus.to_s, '*.txt')
       raise "Invalid corpus: #{corpus.inspect}" if files.empty?
       @filenames += Dir[files]
     end
-    @history = []
+
+    clear_history!
 
     # For tracking stats
     @attempts = 0
@@ -30,27 +28,38 @@ class Corpus
   end
 
   def clear_history!
-    @history = Array.new(@ngrams)
+    @sequence = Sequence.blank
+    @last_word = nil
   end
 
-  def each
+  def each_word_sequence
+    each_word do |word|
+      update_history(word)
+      yield(@sequence, @last_word) unless @sequence.empty?
+    end
+    print "[#{@attempts} attempts, #{(100.0 * @misses.to_f / @attempts).round}% miss rate ]"
+  end
+
+  def each_word
     @filenames.each do |filename|
       clear_history!
       push_history!(Dictionary::FULLSTOP)
       File.open(filename).each do |line|
         extract_words(line).each do |word|
-          update_history(word)
-          yield @history.clone if enough_history?
+          yield(word)
         end
       end
     end
-    print "[#{@attempts} attempts, #{(100.0 * @misses.to_f / @attempts).round}% miss rate ]"
+  end
+
+  def each_syllable
+    # TODO
   end
 
   private
 
   def update_history(word)
-    if last_word == Dictionary::FULLSTOP
+    if @last_word == Dictionary::FULLSTOP
       clear_history!
       push_history!(Dictionary::FULLSTOP)
       # Don't clear history for SEMISTOP or anything else
@@ -72,12 +81,8 @@ class Corpus
   end
 
   def push_history!(word)
-    @history.shift while @history.size >= @ngrams
-    @history << word
-  end
-  
-  def last_word
-    @history.last
+    @sequence = @sequence.plus(@last_word)
+    @last_word = word
   end
 
   def fullstop?(word)
@@ -89,15 +94,10 @@ class Corpus
   end
 
   def valid_word?(word)
-    return true unless @word_validator_block.present?
-    !!@word_validator_block.call(word)
+    @dictionary.include?(word)
   end
 
   def extract_words(line)
     line.downcase.split(/(\s+|[\w']+|[^\w'])/).reject(&:blank?)
-  end
-
-  def enough_history?
-    @history.reject(&:nil?).count > 1
   end
 end

@@ -6,21 +6,35 @@ autoload :Corpus, 'corpus'
 autoload :Dictionary, 'dictionary'
 autoload :Phonetics, 'phonetics'
 autoload :Model, 'model'
-autoload :WordSuggestions, 'word_suggestions'
+autoload :Suggestions, 'suggestions'
 autoload :PoemFormatter, 'poem_formatter'
 autoload :Syllable, 'syllable'
 autoload :PoemFormat, 'poem_format'
 autoload :PoemState, 'poem_state'
 autoload :Rhyme, 'rhyme'
+autoload :Sequence, 'sequence'
 
 
 class Env
+
+# FORMAT = ".*.*.*.*A/.*.*.*.*B/.*.*.*.*A/.*.*.*.*B"
+# FORMAT = "*.*.*.*.A/*.*.*.*.A/*.*.*.*B/*.*.*.*.A/*.*.*.*.A/*.*.*.*B"
+# FORMAT = ".*..*..*.A/.*..*..*.A/.*..*B/.*..*B/.*..*..*.A"  # Limerick
+# FORMAT = "...../......./....."  # Haiku
+# FORMAT = ".*..*.A|*..*B/.*..*.A|*..*B"
+# FORMAT = ".*..*..*A/.*..*..*A/.*..*B/.*..*B/.*..*..*A"  # Limerick 2
+# FORMAT = ".*.*.*A/.*.*.*B/.*.*.*A/.*.*.*B"
+  FORMAT = ".*.*.*.*A/.*.*.*B/.*.*.*.*A/.*.*.*B"
+
+# FORMAT = ".*.*.A/.*.*.A/.*.*.*B/.*.*.C/.*.*.C/.*.*.*B"
+# FORMAT = ".*.*A/.*.*A/.*.*A/.*.*A/.*.*B/.*.*B/.*.*B/.*.*B/"
+
   DICTIONARY = './cmudict/cmudict-0.7b'
-  NGRAMS = 3 # 4 is great
+  HISTORY_SIZE = 3 # 4 is great
   # CORPUS = [:dpp, :poe, :twain]
   # CORPUS = ['**']
-  CORPUS = :shakespeare
-  # CORPUS = :dickens
+  # CORPUS = :shakespeare
+  CORPUS = :dickens
   # CORPUS = :twain
 
   class << self
@@ -30,25 +44,14 @@ class Env
       return Time.now - start
     end
 
-    def get_formatter(fmt)
-      format = PoemFormat.create(fmt)
+    def get_formatter
+      format = PoemFormat.create(FORMAT)
       PoemFormatter.new(format, @model)
     end
   end
 
-  print 'Loading dictionary...'
   elapsed = time do
-    @dictionary = Dictionary.new(DICTIONARY)
-  end
-  puts '%.1fs' % elapsed
-
-  @corpus = Corpus.new(CORPUS, NGRAMS) do |word|
-    @dictionary.include?(word)
-  end
-
-  print 'Training model with corpus...'
-  elapsed = time do
-    @model = Model.new(@dictionary, @corpus)
+    @model = Model.new(DICTIONARY, CORPUS)
   end
 
   puts '%.1fs' % elapsed

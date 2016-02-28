@@ -1,9 +1,8 @@
 class PoemFormat
   class Line < Struct.new(:rhyme, :syllables)
     def clone
-      r = self.rhyme.clone
       s = self.syllables.map(&:clone)
-      Line.new(r, s)
+      Line.new(self.rhyme, s)
     end
   end
 
