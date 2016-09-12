@@ -22,20 +22,25 @@ class Env
 # FORMAT = ".*..*..*.A/.*..*..*.A/.*..*B/.*..*B/.*..*..*.A"  # Limerick
 # FORMAT = "...../......./....."  # Haiku
 # FORMAT = ".*..*.A|*..*B/.*..*.A|*..*B"
-# FORMAT = ".*..*..*A/.*..*..*A/.*..*B/.*..*B/.*..*..*A"  # Limerick 2
+FORMAT = ".*..*..*A/.*..*..*A/.*..*B/.*..*B/.*..*..*A"  # Limerick 2
 # FORMAT = ".*.*.*A/.*.*.*B/.*.*.*A/.*.*.*B"
-  FORMAT = ".*.*.*.*A/.*.*.*B/.*.*.*.*A/.*.*.*B"
+#   FORMAT = ".*.*.*.*A/.*.*.*B/.*.*.*.*A/.*.*.*B"
 
 # FORMAT = ".*.*.A/.*.*.A/.*.*.*B/.*.*.C/.*.*.C/.*.*.*B"
-# FORMAT = ".*.*A/.*.*A/.*.*A/.*.*A/.*.*B/.*.*B/.*.*B/.*.*B/"
+# FORMAT = ".*.*A/.*.*A/.*.*A/.*.*A/.*.*B/.*.*B/.*.*B/.*.*B"
+# FORMAT = ".*.*A/.*.*A/.*.*B/.*.*B"
+# FORMAT = ".*.*A/.*.*A"
 
   DICTIONARY = './cmudict/cmudict-0.7b'
-  HISTORY_SIZE = 3 # 4 is great
+  HISTORY_SIZE = 3  # 3 or 4
   # CORPUS = [:dpp, :poe, :twain]
   # CORPUS = ['**']
-  # CORPUS = :shakespeare
-  CORPUS = :dickens
+  # CORPUS = [:bible, :dpp]
+  CORPUS = :shakespeare
+  # CORPUS = :dickens
   # CORPUS = :twain
+  # CORPUS = :trump
+  # CORPUS = :dpp
 
   class << self
     def time
