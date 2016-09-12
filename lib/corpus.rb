@@ -6,7 +6,7 @@ class Corpus
 
   # TODO: Read from online sources
   def initialize(dictionary, corpora)
-    raise 'ngrams must be > 1' unless Env::HISTORY_SIZE > 1
+    raise 'ngrams must be > 1' unless Poetry::HISTORY_SIZE > 1
     corpora = [corpora] unless corpora.is_a? Array
     @dictionary = dictionary
     @filenames = []

@@ -2,11 +2,11 @@ class Sequence
   # :immutable:
 
   def self.blank
-    self.new(Array.new(Env::HISTORY_SIZE - 1))
+    self.new(Array.new(Poetry::HISTORY_SIZE - 1))
   end
 
   def initialize(history)
-    raise 'Wrong history size' unless history.size == Env::HISTORY_SIZE - 1
+    raise 'Wrong history size' unless history.size == Poetry::HISTORY_SIZE - 1
     @history = history
   end
 

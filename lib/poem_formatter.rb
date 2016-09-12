@@ -18,10 +18,12 @@ class PoemFormatter
 
       begin
         @count = 0
-        t = Time.now
-        result = gen(PoemState.create(@poem_format, @model))
+        result = nil
+        time = Benchmark.realtime do
+          result = gen(PoemState.create(@poem_format, @model))
+        end
         raise NullPoemError if result.nil?
-        puts "[%.1fs] (#{@count})" % (Time.now - t)
+        puts "[%.1fs] (#{@count})" % time
         return result
       rescue Timeout::Error
         puts 'x'
