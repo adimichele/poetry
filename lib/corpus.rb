@@ -1,17 +1,16 @@
 class Corpus
-  #
-  # Sources:
-  # https://www.gutenberg.org/
-  # http://textfiles.com/
+  # Some good text file sources:
+  #   https://www.gutenberg.org/
+  #   http://textfiles.com/
 
-  # TODO: Read from online sources
-  def initialize(dictionary, corpora)
-    raise 'ngrams must be > 1' unless Poetry::HISTORY_SIZE > 1
+  def initialize(dictionary, corpora, ngrams)
+    raise 'ngrams must be > 1' unless ngrams > 1
+    @ngrams = ngrams
     corpora = [corpora] unless corpora.is_a? Array
     @dictionary = dictionary
     @filenames = []
     corpora.each do |corpus|
-      files = File.join('./corpus', corpus.to_s, '*.txt')
+      files = File.join(CORPORA_PATH, corpus.to_s, '*.txt')
       raise "Invalid corpus: #{corpus.inspect}" if files.empty?
       @filenames += Dir[files]
     end
@@ -28,7 +27,7 @@ class Corpus
   end
 
   def clear_history!
-    @sequence = Sequence.blank
+    @sequence = Sequence.blank(@ngrams)
     @last_word = nil
   end
 

@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+require 'benchmark'
+require 'yaml'
 require 'bundler'
 Bundler.require
 
@@ -15,50 +17,21 @@ autoload :PoemFormat, 'poem_format'
 autoload :PoemState, 'poem_state'
 autoload :Rhyme, 'rhyme'
 autoload :Sequence, 'sequence'
+autoload :WordDist, 'word_dist'
 
-require 'benchmark'
+RHYME_DICTIONARY_FILENAME = './cmudict/cmudict-0.7b'
+CORPORA_PATH = './corpus'
 
-class Poetry
+config = YAML::load(File.read('./config.yml'))
+ngrams = config['ngrams'].to_i
 
-  # FORMAT = ".*.*.*.*A/.*.*.*.*B/.*.*.*.*A/.*.*.*.*B"
-  # FORMAT = "*.*.*.*.A/*.*.*.*.A/*.*.*.*B/*.*.*.*.A/*.*.*.*.A/*.*.*.*B"
-  # FORMAT = ".*..*..*.A/.*..*..*.A/.*..*B/.*..*B/.*..*..*.A"  # Limerick
-  # FORMAT = "...../......./....."  # Haiku
-  # FORMAT = ".*..*.A|*..*B/.*..*.A|*..*B"
-  FORMAT = ".*..*..*A/.*..*..*A/.*..*B/.*..*B/.*..*..*A"  # Limerick 2
-  # FORMAT = ".*.*.*A/.*.*.*B/.*.*.*A/.*.*.*B"
-  # FORMAT = ".*.*.*.*A/.*.*.*B/.*.*.*.*A/.*.*.*B"
-
-  # FORMAT = ".*.*.A/.*.*.A/.*.*.*B/.*.*.C/.*.*.C/.*.*.*B"
-  # FORMAT = ".*.*A/.*.*A/.*.*A/.*.*A/.*.*B/.*.*B/.*.*B/.*.*B"
-  # FORMAT = ".*.*A/.*.*A/.*.*B/.*.*B"
-  # FORMAT = ".*.*A/.*.*A"
-
-  DICTIONARY = './cmudict/cmudict-0.7b'
-  HISTORY_SIZE = 3  # 3 or 4
-  # CORPUS = [:dpp, :poe, :twain]
-  # CORPUS = ['**']
-  # CORPUS = [:bible, :dpp]
-  CORPUS = :shakespeare
-  # CORPUS = :dickens
-  # CORPUS = :twain
-  # CORPUS = :trump
-  # CORPUS = :dpp
-
-  class << self
-    def get_formatter
-      format = PoemFormat.create(FORMAT)
-      PoemFormatter.new(format, @model)
-    end
-  end
-
-  elapsed = Benchmark.realtime do
-    @model = Model.new(DICTIONARY, CORPUS)
-  end
-
-  puts '%.1fs' % elapsed
+model = nil
+elapsed = Benchmark.realtime do
+  model = Model.new(RHYME_DICTIONARY_FILENAME, config['corpora'], ngrams)
 end
 
+puts '%.1fs' % elapsed
 
-pf = Poetry.get_formatter
+format = PoemFormat.create(config['format'])
+pf = PoemFormatter.new(format, model)
 puts "\n" + pf.generate

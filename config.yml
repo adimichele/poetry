@@ -1,0 +1,21 @@
+format: .*..*..*A|.*..*..*A|.*..*B|.*..*B|.*..*..*A  # Limerick
+corpora:  # Uncomment one or more
+  #- bible
+  #- dickents
+  #- needlework
+  #- poe
+  - shakespeare
+  #- twain
+ngrams: 3
+
+# Some other poem formats
+#format: .*.*.*.*A|.*.*.*.*B|.*.*.*.*A|.*.*.*.*B  # Basic
+#format: .*..*..*A|.*..*..*A|.*..*B|.*..*B|.*..*..*A  # Limerick
+#format: .*..*..*.A|.*..*..*.A|.*..*B|.*..*B|.*..*..*.A  # Another Limerick
+#format: .....|.......|.....  # Haiku
+#format: .*.*.*.*A|.*.*.*B|.*.*.*.*A|.*.*.*B
+#format: .*.*.*A|.*.*.*B|.*.*.*A|.*.*.*B
+#format: .*.*.A|.*.*.A|.*.*.*B|.*.*.C|.*.*.C|.*.*.*B
+#format: .*.*A|.*.*A|.*.*A|.*.*A|.*.*B|.*.*B|.*.*B|.*.*B
+#format: .*.*A|.*.*A|.*.*B|.*.*B
+#format: .*.*A|.*.*A

@@ -1,12 +1,13 @@
 class Sequence
   # :immutable:
 
-  def self.blank
-    self.new(Array.new(Poetry::HISTORY_SIZE - 1))
+  def self.blank(ngrams)
+    self.new(Array.new(ngrams - 1), ngrams)
   end
 
-  def initialize(history)
-    raise 'Wrong history size' unless history.size == Poetry::HISTORY_SIZE - 1
+  def initialize(history, ngrams)
+    raise 'Wrong history size' unless history.size == ngrams - 1
+    @ngrams = ngrams
     @history = history
   end
 
@@ -28,7 +29,7 @@ class Sequence
   def plus(word)
     new_history = @history + [word]
     new_history.shift
-    Sequence.new(new_history)
+    Sequence.new(new_history, @ngrams)
   end
 
   def empty?

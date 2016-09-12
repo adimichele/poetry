@@ -15,7 +15,7 @@ class PoemFormat
         line.syllables << Syllable.new(false)
       elsif c == '*'
         line.syllables << Syllable.new(true)
-      elsif c == '/'
+      elsif c == '|'
         line = Line.new(nil, [])
         lines << line
       elsif c =~ /\w/

@@ -1,7 +1,7 @@
 class PoemState
   class << self
     def create(poem_format, model)
-      sequence = Sequence.blank.plus(Dictionary::FULLSTOP)
+      sequence = Sequence.blank(model.ngrams).plus(Dictionary::FULLSTOP)
       PoemState.new(model, poem_format, sequence)
     end
   end

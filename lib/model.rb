@@ -1,13 +1,14 @@
 # Suggests successive words
 
 class Model
-  attr_reader :dictionary, :corpus, :word_counts
+  attr_reader :dictionary, :corpus, :word_counts, :ngrams
 
-  def initialize(dictionary_filename, corpora_identifiers)
+  def initialize(dictionary_filename, corpora_identifiers, ngrams)
     puts "\tLoading dictionary..."
     @dictionary = Dictionary.new(dictionary_filename)
     puts "\tLoading corpora..."
-    @corpus = Corpus.new(@dictionary, corpora_identifiers)
+    @ngrams = ngrams
+    @corpus = Corpus.new(@dictionary, corpora_identifiers, @ngrams)
     @frequencies = {}
     @word_counts = {}
 
@@ -20,12 +21,6 @@ class Model
 
   def suggestions_for(state)
     freqs = []
-
-    # TODO: Configure # histories to search - seems to work well when only searching the longest history
-    # state.sequence.each_history_token do |tok|
-    #   # TODO: Look into the miss rate here
-    #   freqs << @frequencies[tok].normalized.select{ |word, _| @dictionary.include?(word) } if @frequencies.include?(tok)
-    # end
     tok = state.sequence.history_token
     freqs << @frequencies[tok].normalized.select{ |word, _| @dictionary.include?(word) } if @frequencies.include?(tok)
 
@@ -49,32 +44,5 @@ class Model
       @frequencies[tok] ||= WordDist.new
       @frequencies[tok] << last_item
     end
-  end
-end
-
-class WordDist
-  attr_reader :observations
-
-  def initialize
-    @observations = {}
-  end
-
-  def <<(word)
-    word = word.to_s.downcase
-    @observations[word] ||= 0.0
-    @observations[word] += 1.0
-  end
-
-  def include?(word)
-    @observations.include?(word.to_s.downcase)
-  end
-
-  def normalized
-    total = @observations.values.sum
-    obs = {}
-    @observations.each do |word, count|
-      obs[word] = count / total
-    end
-    obs
   end
 end
