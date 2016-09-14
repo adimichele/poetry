@@ -19,16 +19,12 @@ class PoemFormatter
       begin
         @count = 0
         result = nil
-        time = Benchmark.realtime do
-          result = gen(PoemState.create(@poem_format, @model))
-        end
+        result = gen(PoemState.create(@poem_format, @model))
         raise NullPoemError if result.nil?
-        puts "[%.1fs] (#{@count})" % time
         return result
       rescue Timeout::Error
-        puts 'x'
-      rescue NullPoemError
-        puts "- (#{@count})"
+        puts 'Search timed out. Restarting...' if VERBOSE
+      # rescue NullPoemError
       end
     end
   end
@@ -37,8 +33,6 @@ class PoemFormatter
 
   # Recursively generate a poem
   # TODO: Allow extra un-stressed (minor) words
-  # TODO: Reset after missing a rhyme match
-  # TODO: or, reset after a full level of 0 suggestions
   def gen(state)
     @count += 1
     raise Timeout::Error if @count >= 20000

@@ -36,18 +36,23 @@ class Corpus
       update_history(word)
       yield(@sequence, @last_word) unless @sequence.empty?
     end
-    print "[#{@attempts} attempts, #{(100.0 * @misses.to_f / @attempts).round}% miss rate ]"
+    # print "[#{@attempts} attempts, #{(100.0 * @misses.to_f / @attempts).round}% miss rate ]"
   end
 
   def each_word
+    puts "Processing #{@filenames.count} file(s) from corpus..." if VERBOSE
     @filenames.each do |filename|
       clear_history!
       push_history!(Dictionary::FULLSTOP)
-      File.open(filename).each do |line|
+      f = File.open(filename)
+      printer = ProgressPrinter.new(f)
+      f.each do |line|
+        printer.print_progress if VERBOSE
         extract_words(line).each do |word|
           yield(word)
         end
       end
+      puts if VERBOSE
     end
   end
 

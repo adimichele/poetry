@@ -1,14 +1,10 @@
-format: .*..*..*A|.*..*..*A|.*..*B|.*..*B|.*..*..*A  # Limerick
-corpora:  # Uncomment one or more
-  #- bible
-  #- dickents
-  #- needlework
-  #- poe
-  - shakespeare
-  #- twain
-ngrams: 3
-
-# Some other poem formats
+# Specify the format of the poem. The following tokens may be used:
+#  .        Unstressed syllable
+#  *        Stressed syllable
+#  |        Line break
+#  :alpha:  Use letters before line breaks to specify the rhyme scheme
+#
+# Here are some pre-made poem formats:
 #format: .*.*.*.*A|.*.*.*.*B|.*.*.*.*A|.*.*.*.*B  # Basic
 #format: .*..*..*A|.*..*..*A|.*..*B|.*..*B|.*..*..*A  # Limerick
 #format: .*..*..*.A|.*..*..*.A|.*..*B|.*..*B|.*..*..*.A  # Another Limerick
@@ -19,3 +15,18 @@ ngrams: 3
 #format: .*.*A|.*.*A|.*.*A|.*.*A|.*.*B|.*.*B|.*.*B|.*.*B
 #format: .*.*A|.*.*A|.*.*B|.*.*B
 #format: .*.*A|.*.*A
+
+format: .*..*..*A|.*..*..*A|.*..*B|.*..*B|.*..*..*A  # Limerick
+
+# Uncomment one or more corpora sources to use. These correspond to sub-folders in the ./corpus/ folder.
+corpora:
+  #- bible
+  #- dickens
+  #- needlework
+  #- poe
+  - shakespeare
+  #- twain
+
+# Specify the n-gram size to use. 2 or 3 works best.
+ngrams: 3
+

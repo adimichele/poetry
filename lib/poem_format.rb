@@ -6,7 +6,7 @@ class PoemFormat
     end
   end
 
-  def self.create(fmt)
+  def self.parse(fmt)
     lines = []
     line = Line.new(nil, [])
     lines << line
@@ -39,8 +39,10 @@ class PoemFormat
     return false unless phonetics.syllables.size <= current_line.syllables.size
 
     # Make sure syllables rhyme (if a rhyme was defined)
-    phonetics.syllables.each_with_index do |syl, i|
-      return false unless syl.sounds_like?(current_line.syllables[i])
+    unless current_line.rhyme.nil?
+      phonetics.syllables.each_with_index do |syl, i|
+        return false unless syl.sounds_like?(current_line.syllables[i])
+      end
     end
 
     # If the word completes the line, make sure it doesn't match another rhyming word

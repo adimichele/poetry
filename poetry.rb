@@ -1,37 +1,20 @@
 #!/usr/bin/env ruby
 
-require 'benchmark'
 require 'yaml'
 require 'bundler'
 Bundler.require
 
-$: << File.expand_path('../lib', __FILE__)
-autoload :Corpus, 'corpus'
-autoload :Dictionary, 'dictionary'
-autoload :Phonetics, 'phonetics'
-autoload :Model, 'model'
-autoload :Suggestions, 'suggestions'
-autoload :PoemFormatter, 'poem_formatter'
-autoload :Syllable, 'syllable'
-autoload :PoemFormat, 'poem_format'
-autoload :PoemState, 'poem_state'
-autoload :Rhyme, 'rhyme'
-autoload :Sequence, 'sequence'
-autoload :WordDist, 'word_dist'
+RHYME_DICTIONARY_FILENAME = File.expand_path('../cmudict/cmudict-0.7b', __FILE__)
+CORPORA_PATH = File.expand_path('../corpus', __FILE__)
+CONFIG_FILENAME = File.expand_path('../config.yml', __FILE__)
+VERBOSE = false
 
-RHYME_DICTIONARY_FILENAME = './cmudict/cmudict-0.7b'
-CORPORA_PATH = './corpus'
+Dir[File.expand_path('../lib/**/*.rb', __FILE__)].each{ |file| require file }
 
-config = YAML::load(File.read('./config.yml'))
+config = YAML::load(File.read(CONFIG_FILENAME))
 ngrams = config['ngrams'].to_i
-
-model = nil
-elapsed = Benchmark.realtime do
-  model = Model.new(RHYME_DICTIONARY_FILENAME, config['corpora'], ngrams)
-end
-
-puts '%.1fs' % elapsed
-
-format = PoemFormat.create(config['format'])
+model = Model.new(config['corpora'], ngrams)
+format = PoemFormat.parse(config['format'])
 pf = PoemFormatter.new(format, model)
-puts "\n" + pf.generate
+puts if VERBOSE
+puts pf.generate

@@ -3,17 +3,13 @@
 class Model
   attr_reader :dictionary, :corpus, :word_counts, :ngrams
 
-  def initialize(dictionary_filename, corpora_identifiers, ngrams)
-    puts "\tLoading dictionary..."
-    @dictionary = Dictionary.new(dictionary_filename)
-    puts "\tLoading corpora..."
+  def initialize(corpora_identifiers, ngrams)
+    @dictionary = Dictionary.new(RHYME_DICTIONARY_FILENAME)
     @ngrams = ngrams
     @corpus = Corpus.new(@dictionary, corpora_identifiers, @ngrams)
     @frequencies = {}
     @word_counts = {}
 
-    # TODO: Go through each syllable instead
-    puts "\tTraining model..."
     @corpus.each_word_sequence do |sequence, last_item|
       add(sequence, last_item)
     end
