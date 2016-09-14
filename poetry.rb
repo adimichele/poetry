@@ -16,5 +16,6 @@ ngrams = config['ngrams'].to_i
 model = Model.new(config['corpora'], ngrams)
 format = PoemFormat.parse(config['format'])
 pf = PoemFormatter.new(format, model)
+poem = pf.generate
 puts if VERBOSE
-puts pf.generate
+puts poem
