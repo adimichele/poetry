@@ -56,10 +56,6 @@ class Corpus
     end
   end
 
-  def each_syllable
-    # TODO
-  end
-
   private
 
   def update_history(word)

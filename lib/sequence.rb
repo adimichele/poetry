@@ -12,7 +12,6 @@ class Sequence
   end
 
   # Iterates through histories, starting with longest
-  # TODO: Make this configurable
   def each_history_token
     h = @history.clone
     while h.size > 0

@@ -12,8 +12,7 @@ VERBOSE = true
 Dir[File.expand_path('../lib/**/*.rb', __FILE__)].each{ |file| require file }
 
 config = YAML::load(File.read(CONFIG_FILENAME))
-ngrams = config['ngrams'].to_i
-model = Model.new(config['corpora'], ngrams)
+model = Model.new(config['corpora'], config['ngrams'].to_i)
 format = PoemFormat.parse(config['format'])
 pf = PoemFormatter.new(format, model)
 poem = pf.generate

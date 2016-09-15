@@ -1,15 +1,12 @@
 class Phonetics
   attr_reader :syllables, :word
 
-  # TODO: Some two-word combos should have specific phonetics (e.g "in the")?
-
   MINOR_WORDS = %w{the and of a an}
 
   def self.is_minor?(word)
     MINOR_WORDS.include?(word.downcase)
   end
 
-  # TODO: group phones by syllable (like PoemFormat - maybe reuse the Syllable struct?)
   def initialize(word, phone_symbols)
     @word = word
     @syllables = []
